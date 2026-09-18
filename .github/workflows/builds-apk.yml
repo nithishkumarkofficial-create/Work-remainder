@@ -1,0 +1,54 @@
+name: Build Android APK
+
+# Runs automatically whenever you push to the main branch, and can also be
+# triggered manually from the "Actions" tab on GitHub with the "Run workflow"
+# button. Everything happens on GitHub's own servers - nothing installs on
+# your computer.
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the project
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Java (required by Android Gradle build)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install project dependencies
+        run: npm install
+
+      - name: Generate app icons and splash screen
+        run: npx capacitor-assets generate --android || true
+
+      - name: Add the Android native project
+        run: npx cap add android
+
+      - name: Sync web app into the Android project
+        run: npx cap sync android
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
+      - name: Build the debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WorkReminder-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
