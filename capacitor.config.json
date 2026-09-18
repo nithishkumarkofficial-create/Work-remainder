@@ -1,0 +1,12 @@
+{
+  "appId": "com.nithish.workreminder",
+  "appName": "Work Reminder",
+  "webDir": "www",
+  "backgroundColor": "#0e1116",
+  "android": {
+    "backgroundColor": "#0e1116"
+  },
+  "ios": {
+    "backgroundColor": "#0e1116"
+  }
+}

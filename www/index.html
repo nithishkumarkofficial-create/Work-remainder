@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Work Reminder</title>
+<meta name="theme-color" content="#0e1116">
+<style>
+:root{
+  --bg:#0e1116; --panel:#161a21; --panel-2:#1b2027; --line:#262c35;
+  --txt:#e9edf3; --muted:#98a1ae; --soft:#6b7684;
+  --accent:#3b6ef6; --accent-soft:#1b2740;
+  --ok:#35c57e; --ok-soft:#12291f;
+  --warn:#e9a441; --warn-soft:#2b2115;
+  --dang:#f4706e; --dang-soft:#2e1818;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overscroll-behavior-y:none}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
+  font-size:15.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:calc(var(--safe-top) + 14px) 14px calc(var(--safe-bot) + 90px)}
+.top{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(140deg,var(--accent),#8a5cf6);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:17px;flex:0 0 auto}
+.top h1{font-size:18px;margin:0;font-weight:650;letter-spacing:-.02em}
+.top span{display:block;font-size:12px;color:var(--muted);font-weight:450}
+.top .clk{margin-left:auto;text-align:right;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.top .clk small{display:block;font-size:10.5px;color:var(--muted);font-family:inherit;font-weight:500}
+
+.banner{display:flex;align-items:center;gap:10px;background:var(--warn-soft);border:1px solid var(--line);
+  border-radius:12px;padding:11px 13px;margin-bottom:14px;font-size:13px}
+.banner button{margin-left:auto;flex:0 0 auto}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat{padding:10px 6px;border-radius:12px;background:var(--panel);border:1px solid var(--line);text-align:center}
+.stat b{display:block;font-size:19px;font-weight:650;font-variant-numeric:tabular-nums}
+.stat span{font-size:10.5px;color:var(--muted);font-weight:500}
+.stat.d b{color:var(--dang)} .stat.o b{color:var(--ok)} .stat.w b{color:var(--warn)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-bottom:14px}
+.listhead{display:flex;align-items:center;gap:8px;padding:14px 14px 8px}
+.listhead h3{margin:0;margin-right:auto;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--soft);font-weight:700}
+.chips{display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:transparent;color:var(--muted);font-size:12px;font-weight:600;
+  padding:5px 11px;border-radius:99px}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+ul.tasks{list-style:none;margin:0;padding:6px 8px 12px}
+li.task{display:flex;gap:11px;align-items:flex-start;padding:12px 8px;border-radius:12px;position:relative}
+li.task::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:9px;background:var(--soft)}
+li.task.p-high::before{background:var(--dang)}
+li.task.p-med::before{background:var(--warn)}
+li.task.p-low::before{background:var(--ok)}
+li.task.done{opacity:.5}
+li.task.done .t-title{text-decoration:line-through}
+.tick{margin-top:2px;margin-left:6px;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);
+  background:transparent;flex:0 0 auto;display:grid;place-items:center;color:transparent;font-size:13px}
+li.task.done .tick{background:var(--ok);border-color:var(--ok);color:#0e1116}
+.t-body{flex:1;min-width:0}
+.t-title{font-weight:600;font-size:15px;word-break:break-word}
+.t-notes{font-size:12.5px;color:var(--muted);margin-top:2px;word-break:break-word}
+.t-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px}
+.tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--panel-2);
+  border:1px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums}
+.tag.time{font-family:ui-monospace,monospace;color:var(--txt)}
+.tag.cd{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.tag.cd.soon{background:var(--warn-soft);color:var(--warn)}
+.tag.cd.late{background:var(--dang-soft);color:var(--dang)}
+.tag.cd.ok{background:var(--ok-soft);color:var(--ok)}
+.t-act{display:flex;flex-direction:column;gap:6px}
+.mini{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:9px;width:30px;height:30px;
+  font-size:14px;display:grid;place-items:center}
+.mini.del{color:var(--dang);border-color:var(--dang)}
+.empty{text-align:center;padding:34px 16px;color:var(--soft);font-size:14px}
+.empty div{font-size:28px;margin-bottom:8px;opacity:.5}
+
+.fab{position:fixed;right:18px;bottom:calc(var(--safe-bot) + 20px);width:58px;height:58px;border-radius:50%;
+  background:var(--accent);color:#fff;border:0;font-size:26px;font-weight:400;box-shadow:0 6px 20px rgba(59,110,246,.45);
+  display:grid;place-items:center;z-index:40}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:none}
+.sheet-bg.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-radius:20px 20px 0 0;
+  z-index:51;transform:translateY(105%);transition:transform .22s cubic-bezier(.2,.9,.3,1);
+  max-height:88vh;overflow-y:auto;padding:10px 18px calc(var(--safe-bot) + 18px)}
+.sheet.on{transform:translateY(0)}
+.sheet-handle{width:38px;height:4px;background:var(--line);border-radius:99px;margin:6px auto 14px}
+.sheet h3{margin:0 0 14px;font-size:16px;font-weight:650}
+.f{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.f label{font-size:12.5px;color:var(--muted);font-weight:550}
+.row2{display:flex;gap:10px}
+.row2 .f{flex:1}
+input,select{font-family:inherit;font-size:16px;color:var(--txt);background:var(--panel-2);
+  border:1px solid var(--line);border-radius:11px;padding:11px 12px;outline:none;width:100%}
+input:focus,select:focus{border-color:var(--accent)}
+.sheet-actions{display:flex;gap:10px;margin-top:6px}
+.btn{flex:1;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:13px;font-size:15px;
+  font-weight:650;font-family:inherit}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.btn.danger{background:var(--dang-soft);color:var(--dang)}
+
+.sw{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:14.5px}
+.sw label{margin-right:auto}
+.toggle{width:44px;height:26px;border-radius:99px;background:var(--line);border:0;position:relative;flex:0 0 auto}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;
+  transition:.18s}
+.toggle.on{background:var(--accent)}
+.toggle.on::after{left:21px}
+.hint{font-size:12px;color:var(--soft);line-height:1.5;margin:8px 0 4px}
+
+#toasts{position:fixed;left:14px;right:14px;top:calc(var(--safe-top) + 10px);display:flex;flex-direction:column;
+  gap:8px;z-index:60}
+.toast{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;
+  padding:12px 13px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.toast.due{border-left-color:var(--dang)}
+.toast b{display:block;font-size:14px;margin-bottom:2px}
+.toast p{margin:0;font-size:12.5px;color:var(--muted)}
+
+.bottomnav{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);
+  display:flex;padding-bottom:var(--safe-bot);z-index:30}
+.navbtn{flex:1;background:transparent;border:0;color:var(--muted);padding:10px 4px 8px;font-size:11px;
+  font-family:inherit;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+.navbtn .ic{font-size:19px}
+.navbtn.on{color:var(--accent)}
+.page{display:none}
+.page.on{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="logo">&#9200;</div>
+    <div><h1>Work Reminder</h1><span id="dateline">&mdash;</span></div>
+    <div class="clk"><span id="clock">--:--</span><small id="nextline">nothing scheduled</small></div>
+  </div>
+
+  <div class="banner" id="permBanner" style="display:none">
+    <span>&#128276;</span>
+    <span>Allow notifications so reminders reach you even when the app is closed.</span>
+    <button class="btn" style="padding:8px 12px;font-size:12.5px;flex:0 0 auto" id="permBtn">Allow</button>
+  </div>
+
+  <!-- ===== TASKS PAGE ===== -->
+  <div class="page on" id="pageTasks">
+    <div class="stats">
+      <div class="stat"><b id="sTotal">0</b><span>TODAY</span></div>
+      <div class="stat w"><b id="sPend">0</b><span>PENDING</span></div>
+      <div class="stat d"><b id="sLate">0</b><span>OVERDUE</span></div>
+      <div class="stat o"><b id="sDone">0</b><span>DONE</span></div>
+    </div>
+
+    <div class="card">
+      <div class="listhead">
+        <h3>Schedule</h3>
+        <div class="chips">
+          <button class="chip on" data-f="all">All</button>
+          <button class="chip" data-f="pending">Pending</button>
+          <button class="chip" data-f="done">Done</button>
+        </div>
+      </div>
+      <ul class="tasks" id="list"></ul>
+    </div>
+  </div>
+
+  <!-- ===== REPORTS PAGE ===== -->
+  <div class="page" id="pageReports">
+    <div class="card" style="padding:14px">
+      <div class="chips" style="margin-bottom:12px">
+        <button class="chip on" data-r="today">Today</button>
+        <button class="chip" data-r="week">This week</button>
+        <button class="chip" data-r="month">This month</button>
+        <button class="chip" data-r="all">All time</button>
+      </div>
+      <div class="stats" style="margin-bottom:4px">
+        <div class="stat"><b id="rTotal">0</b><span>TASKS</span></div>
+        <div class="stat o"><b id="rDone">0</b><span>COMPLETED</span></div>
+        <div class="stat w"><b id="rPend">0</b><span>PENDING</span></div>
+        <div class="stat"><b id="rRate">0%</b><span>DONE RATE</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="listhead"><h3 id="reportListTitle">Today's tasks</h3></div>
+      <ul class="tasks" id="reportList"></ul>
+    </div>
+
+    <div class="card" style="padding:16px">
+      <button class="btn" style="width:100%" id="shareReportBtn">Share report</button>
+      <p class="hint">Builds a plain-text summary of the selected range and opens your
+        phone's share sheet &mdash; send it over WhatsApp, email, or save it as a file.</p>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS PAGE ===== -->
+  <div class="page" id="pageSettings">
+    <div class="card" style="padding:16px">
+      <h3 style="margin:0 0 4px;font-size:15px">End-of-day work log</h3>
+      <p class="hint" style="margin-top:0">A nudge 30 minutes before this time, and again when it hits.</p>
+      <div class="f"><label for="eodTime">Remind me at</label><input id="eodTime" type="time" value="18:00"></div>
+      <div class="sw"><label for="eodOn">End-of-day reminder</label><button class="toggle on" id="eodOn"></button></div>
+    </div>
+
+    <div class="card" style="padding:16px">
+      <h3 style="margin:0 0 12px;font-size:15px">Notifications</h3>
+      <div class="sw"><label>Sound</label><button class="toggle on" id="swSound"></button></div>
+      <div class="sw"><label>Vibrate</label><button class="toggle on" id="swVibrate"></button></div>
+      <div class="sw"><label>Repeat overdue every 10 min</label><button class="toggle" id="swNag"></button></div>
+      <button class="btn ghost" style="width:100%;margin-top:10px" id="testBtn">Send test notification</button>
+    </div>
+
+    <div class="card" style="padding:16px">
+      <h3 style="margin:0 0 10px;font-size:15px">Data</h3>
+      <button class="btn ghost" style="width:100%;margin-bottom:8px" id="clrBtn">Clear completed tasks</button>
+      <p class="hint">Everything is stored only on this device. Reminders are scheduled with the
+        operating system directly, so they fire even if the app is closed or the phone restarts &mdash;
+        as long as the phone itself is on.</p>
+    </div>
+  </div>
+
+  <div style="height:1px"></div>
+</div>
+
+<button class="fab" id="fab">+</button>
+
+<div class="bottomnav">
+  <button class="navbtn on" data-page="pageTasks"><span class="ic">&#128203;</span>Tasks</button>
+  <button class="navbtn" data-page="pageReports"><span class="ic">&#128202;</span>Reports</button>
+  <button class="navbtn" data-page="pageSettings"><span class="ic">&#9881;</span>Settings</button>
+</div>
+
+<!-- Add/Edit sheet -->
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <h3 id="sheetTitle">Add a task</h3>
+  <div class="f"><label for="fTitle">What do you have to do?</label>
+    <input id="fTitle" placeholder="e.g. Update today's work log"></div>
+  <div class="hint" id="sheetCreated" style="display:none;margin-top:-6px"></div>
+  <div class="row2">
+    <div class="f"><label for="fTime">Due time</label><input id="fTime" type="time"></div>
+    <div class="f"><label for="fRemind">Remind before</label>
+      <select id="fRemind"><option>5</option><option>10</option><option>15</option>
+        <option selected>30</option><option>45</option><option>60</option><option>120</option></select></div>
+  </div>
+  <div class="f"><label for="fNotes">Notes (optional)</label>
+    <input id="fNotes" placeholder="Details, ticket no., client..."></div>
+  <div class="row2">
+    <div class="f"><label for="fPrio">Priority</label>
+      <select id="fPrio"><option value="high">High</option><option value="med" selected>Medium</option>
+        <option value="low">Low</option></select></div>
+    <div class="f"><label for="fRepeat">Repeat</label>
+      <select id="fRepeat"><option value="0">Today only</option><option value="1">Every day</option>
+        <option value="2">Weekdays</option></select></div>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn ghost" id="sheetCancel">Cancel</button>
+    <button class="btn" id="sheetSave">Add task</button>
+  </div>
+  <div class="sheet-actions" id="sheetDeleteRow" style="display:none">
+    <button class="btn danger" id="sheetDelete">Delete task</button>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script src="js/capacitor.js"></script>
+<script src="js/plugin-local-notifications.js"></script>
+<script src="js/plugin-preferences.js"></script>
+<script src="js/plugin-app.js"></script>
+<script src="js/plugin-share.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

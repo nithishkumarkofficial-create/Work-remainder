@@ -1,0 +1,23 @@
+{
+  "name": "work-reminder-mobile",
+  "version": "1.0.0",
+  "description": "Work Reminder - Android/iOS app with native local notifications",
+  "scripts": {
+    "sync": "cap sync",
+    "android": "cap open android",
+    "ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/app": "^6.0.2",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/local-notifications": "^6.1.2",
+    "@capacitor/preferences": "^6.0.3",
+    "@capacitor/share": "^6.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/ios": "^6.2.1"
+  }
+}
